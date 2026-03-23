@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>⬆️ File Upload</h2>
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        <label for="file">Select a file to upload to the shared drive:</label>
+        <input type="file" id="file" name="file" required>
+        <button type="submit" class="btn">Upload File</button>
+    </form>
+    {% if message %}
+    <div class="alert alert-success">{{ message }}</div>
+    {% endif %}
+    <p class="form-hint">Max file size: 16 MB. Supported: all formats.</p>
+</div>
+{% endblock %}

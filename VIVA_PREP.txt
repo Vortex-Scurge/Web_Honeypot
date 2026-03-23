@@ -1,0 +1,1264 @@
+================================================================================
+         WEB HONEYPOT - MINOR PROJECT VIVA PREPARATION GUIDE
+================================================================================
+
+
+================================================================================
+PART 1: GENERAL / CONCEPTUAL QUESTIONS
+================================================================================
+
+
+Q1. What is a honeypot?
+--------------------------------------------------------------------------------
+
+Think of a honeypot like a fake house set up by the police to catch burglars.
+The house looks real from the outside - it has doors, windows, furniture inside.
+But nobody actually lives there. When a burglar breaks in, hidden cameras
+record everything they do - which door they tried, what tools they used, what
+they were looking for.
+
+Our web honeypot works the same way. It is a fake website that looks like a
+real company's internal portal (we called it "Acme Corp"). It has login pages,
+search bars, file upload forms, admin panels - all the things a real website
+would have. But none of it actually works. There is no real database behind
+the login page. The search bar does not really search anything. The admin
+panel does not really give admin access.
+
+When a hacker finds this website and tries to attack it, they think they are
+attacking a real target. Meanwhile, our system is quietly recording everything
+they do - what they typed, what attack they tried, their IP address, what
+tools they used, and when they did it.
+
+The word "honeypot" comes from the idea of a pot of honey that attracts bears.
+The honey (our fake website) attracts the bears (hackers), and we get to study
+their behavior safely.
+
+
+Q2. What is the difference between a low-interaction and high-interaction honeypot?
+--------------------------------------------------------------------------------
+
+LOW-INTERACTION HONEYPOT (this is what we built):
+
+Imagine a movie set. From the outside, the buildings look real. But if you
+walk inside, there is nothing there - no furniture, no plumbing, no
+electricity. It is just a facade.
+
+Our honeypot is like this. The login page looks real, but when you type a
+username and password, it just says "invalid credentials" every time. It does
+not actually check any database. The pages are just pretending to be real.
+
+Advantages:
+- Very safe. Since nothing is real, hackers cannot actually break anything.
+- Easy to set up and maintain.
+- Uses very little computer resources.
+
+Disadvantages:
+- Cannot capture what a hacker does AFTER breaking in (because there is
+  nothing to break into).
+- A skilled hacker might realize it is fake quickly.
+
+HIGH-INTERACTION HONEYPOT:
+
+This is like building an actual house with real locks, real valuables inside,
+and real alarm systems - but the house is still a trap. The house runs real
+software with real vulnerabilities.
+
+Advantages:
+- Captures the complete attack from start to finish.
+- Can study exactly how hackers exploit vulnerabilities.
+
+Disadvantages:
+- Very dangerous. If the hacker breaks in, they might use the honeypot to
+  attack other real systems.
+- Expensive and complicated to maintain.
+- Needs constant monitoring.
+
+
+Q3. Why did you build a web honeypot specifically?
+--------------------------------------------------------------------------------
+
+Websites are the number one target for hackers on the internet. Almost every
+company has a website, and hackers constantly scan the internet looking for
+vulnerable ones. By building a web honeypot, we can:
+
+1. Learn what kinds of attacks are most common (SQL Injection? XSS? Brute
+   force?)
+2. Understand what tools hackers use (automated scanners, manual testing, etc.)
+3. See what pages hackers look for first (/admin, /config, /.env)
+4. Practice real cybersecurity skills in a safe environment
+
+It is also very practical as a minor project because it combines multiple
+concepts - web development (Flask, HTML, CSS), database management (SQLite),
+security concepts (attack types), and data visualization (charts on the
+dashboard).
+
+
+Q4. What are the real-world applications of honeypots?
+--------------------------------------------------------------------------------
+
+1. THREAT INTELLIGENCE: Big companies like Google and Microsoft run honeypots
+   to learn about new attack techniques before hackers use them on real
+   systems.
+
+2. EARLY WARNING: If a honeypot on your network starts getting attacked, it
+   means someone is probing your network. This gives you time to strengthen
+   your real systems before the attacker finds them.
+
+3. RESEARCH: Security researchers study honeypot data to understand global
+   attack trends. For example, "Which countries do most attacks come from?"
+   or "What is the most common attack this month?"
+
+4. WASTING ATTACKER TIME: Every minute a hacker spends on a honeypot is a
+   minute they are NOT spending on your real systems. Some advanced honeypots
+   are designed specifically to slow down attackers with fake data and
+   delayed responses.
+
+5. LAW ENFORCEMENT: Honeypot logs can be used as evidence if you need to
+   report an attack to the police or take legal action.
+
+6. EDUCATION: Honeypots are excellent for teaching cybersecurity concepts,
+   which is exactly what we are doing with this project.
+
+
+Q5. Is this legal to deploy?
+--------------------------------------------------------------------------------
+
+Yes, absolutely. A honeypot is a DEFENSIVE tool. You are not attacking anyone.
+You are simply putting up a fake website on YOUR OWN server and recording
+what happens when people interact with it.
+
+Think of it like putting a security camera in your own shop. You are not
+invading anyone's privacy - you are monitoring YOUR property. If someone
+breaks in, the camera recordings are evidence.
+
+However, there are two rules:
+1. Only deploy it on servers and networks you OWN or have PERMISSION to use.
+2. Never use honeypot data to launch counter-attacks against the attacker.
+   That would be illegal.
+
+
+Q6. What is the difference between IDS, IPS, and a Honeypot?
+--------------------------------------------------------------------------------
+
+Think of protecting a building:
+
+IDS (Intrusion Detection System):
+This is like a security guard watching CCTV cameras. He watches who comes in
+and out, and if he sees someone suspicious, he alerts the building manager.
+But he does not stop the person himself. An IDS monitors your real network
+traffic and raises an alarm when it sees something suspicious.
+
+IPS (Intrusion Prevention System):
+This is like the security guard at the door who actually STOPS suspicious
+people from entering. An IPS does not just detect attacks - it actively
+blocks them by dropping malicious network packets.
+
+HONEYPOT:
+This is like setting up a fake jewelry store next to your real one. It does
+not protect your real store directly. Instead, it lures thieves into the
+fake store where you can study their methods safely. A honeypot does not
+monitor your real traffic at all - it creates a separate decoy.
+
+All three are complementary. In a good security setup, you would use all
+three together - IDS/IPS to protect real systems, and honeypots to study
+attackers.
+
+
+Q7. What is the OWASP Top 10?
+--------------------------------------------------------------------------------
+
+OWASP stands for "Open Web Application Security Project." It is a nonprofit
+organization that publishes free security guidelines.
+
+The "OWASP Top 10" is their most famous document. It lists the 10 most
+dangerous security risks for web applications. It gets updated every few
+years. Security professionals worldwide use it as a checklist.
+
+Our honeypot detects several of these:
+
+- A03: INJECTION (ranked #3 most dangerous)
+  This includes SQL Injection and Command Injection.
+  Our system detects both of these.
+
+- A07: CROSS-SITE SCRIPTING or XSS (ranked #7)
+  Our system detects this.
+
+- A01: BROKEN ACCESS CONTROL (ranked #1 most dangerous!)
+  This includes LFI (Local File Inclusion) and Directory Traversal.
+  Our system detects both.
+
+- A05: SECURITY MISCONFIGURATION (ranked #5)
+  This includes things like exposed config files, default admin panels.
+  Our bot scanning detection catches these.
+
+So our project covers 4 of the top 10 most critical web security risks!
+
+
+================================================================================
+PART 2: ATTACK-SPECIFIC QUESTIONS
+================================================================================
+
+
+Q8. What is SQL Injection? How does your system detect it?
+--------------------------------------------------------------------------------
+
+Imagine you have a library computer where you type a book name, and the
+computer searches its database for that book. Behind the scenes, the computer
+runs a command like:
+
+    "Find the book where title = [whatever you typed]"
+
+SQL Injection is when someone types something sneaky instead of a book name.
+For example, instead of typing "Harry Potter", they type:
+
+    "Harry Potter' OR 1=1 --"
+
+Now the computer's command becomes:
+
+    "Find the book where title = 'Harry Potter' OR 1=1 --'"
+
+The "OR 1=1" part means "or if 1 equals 1" which is ALWAYS true. So the
+computer returns ALL books in the database, including ones the user should
+not have access to. The "--" is a comment marker in SQL that tells the
+database to ignore everything after it.
+
+In a real attack, this could expose usernames, passwords, credit card
+numbers, or anything else in the database.
+
+HOW WE DETECT IT:
+In our detector.py file, we have a list of known SQL Injection patterns:
+- "OR 1=1" - the classic bypass
+- "UNION SELECT" - used to extract data from other database tables
+- "DROP TABLE" - used to delete entire database tables
+- "SLEEP()" - used to test if injection works by making the server pause
+- Strings ending with "--" (SQL comment)
+
+When any request comes in, we check if the URL or the data the user
+submitted contains any of these patterns. If yes, we flag it as SQL
+Injection.
+
+
+Q9. What is XSS (Cross-Site Scripting)?
+--------------------------------------------------------------------------------
+
+Imagine a bulletin board in a school where anyone can pin a note. XSS is like
+someone pinning a note that says "Turn around and close your eyes" and people
+actually do it because they think it is from the school administration.
+
+In web terms: XSS is when an attacker injects JavaScript code into a website
+that gets executed in OTHER users' browsers.
+
+Example: Suppose a website has a search page that shows "You searched for:
+[your search term]". If someone searches for:
+
+    <script>alert(document.cookie)</script>
+
+And the website displays this as-is without cleaning it, the browser sees
+the <script> tag and executes the JavaScript code. This particular code
+would show the user's cookies, which could include their login session.
+
+There are 3 types:
+
+STORED XSS: The malicious script is saved permanently. Like writing graffiti
+on a wall - everyone who walks by sees it. Example: A hacker posts a
+comment containing <script> code on a forum. Every user who reads that
+comment gets attacked.
+
+REFLECTED XSS: The malicious script is bounced back once. Like shouting in
+a valley and hearing your echo. Example: The attacker tricks you into
+clicking a link that contains the script in the URL.
+
+DOM-BASED XSS: The malicious script manipulates the page directly through
+the browser without going to the server at all.
+
+HOW WE DETECT IT:
+We look for patterns like <script>, javascript:, onerror=, alert(),
+document.cookie, <iframe>, etc. in the incoming request.
+
+
+Q10. What is Local File Inclusion (LFI)?
+--------------------------------------------------------------------------------
+
+Imagine a website that shows different pages based on a URL parameter, like:
+
+    website.com/page?id=about    --> shows the About Us page
+    website.com/page?id=contact  --> shows the Contact page
+
+Behind the scenes, the server takes the "id" value and opens a file with
+that name. LFI is when an attacker changes the "id" to point to a sensitive
+system file:
+
+    website.com/page?id=../../etc/passwd
+
+The "../../" means "go up two folders." By going up enough folders,
+the attacker reaches the root of the server and can read system files like:
+
+- /etc/passwd (list of all users on a Linux system)
+- /etc/shadow (encrypted passwords)
+- Configuration files with database passwords
+
+It is like if a library's book request form let you request books from the
+staff-only section by manipulating the call number.
+
+HOW WE DETECT IT:
+We look for patterns like "../../", "/etc/passwd", "boot.ini" (Windows
+equivalent), "php://filter" (PHP-specific tricks), etc.
+
+
+Q11. What is the difference between LFI and Directory Traversal?
+--------------------------------------------------------------------------------
+
+They are very similar and often confused. Think of it this way:
+
+LFI (Local File Inclusion):
+The server has a function that INCLUDES and EXECUTES a file. For example,
+in PHP: include("pages/" . $_GET['id'] . ".php"). The attacker tricks it
+into including a system file or their own malicious file.
+
+DIRECTORY TRAVERSAL:
+The server has a function that READS and DISPLAYS a file. For example, a
+download feature: download("files/" . $_GET['file']). The attacker tricks
+it into reading files outside the intended folder.
+
+The key difference:
+- LFI = Including/executing a file (more dangerous, can run code)
+- Directory Traversal = Reading/downloading a file (can leak data)
+
+Both use the same "../../" technique to escape the intended directory.
+
+In our honeypot:
+- /page?id=../../etc/passwd --> LFI (the "page" endpoint simulates
+  file inclusion)
+- /download?file=../../etc/passwd --> Directory Traversal (the "download"
+  endpoint simulates file downloading)
+
+
+Q12. What is Command Injection?
+--------------------------------------------------------------------------------
+
+Some websites let you run certain functions that involve operating system
+commands behind the scenes. For example, a "Ping Test" tool might run:
+
+    ping [whatever IP address you typed]
+
+Command Injection is when an attacker adds extra commands after the intended
+one. For example, instead of typing "192.168.1.1", they type:
+
+    192.168.1.1 ; cat /etc/passwd
+
+The semicolon (;) tells the operating system "run the first command, then
+run the next one." So the server runs ping AND then shows the password file.
+
+Other techniques:
+- && (run next command if first succeeds): 192.168.1.1 && whoami
+- | (pipe - feed first command's output to second): 192.168.1.1 | ls
+- ` (backticks - run and substitute): `whoami`
+
+It is like asking a waiter for "a coffee and also give me the cash register
+keys" and the waiter does both because he does not know the second part is
+not a legitimate request.
+
+HOW WE DETECT IT:
+We look for patterns like ";ls", "&&whoami", "|cat", backtick commands, and
+common command names (ls, cat, whoami, wget, curl, bash, etc.).
+
+
+Q13. What is a brute-force attack? How do you detect it?
+--------------------------------------------------------------------------------
+
+Brute force is the simplest attack - just try every possible password until
+one works. It is like trying every key on a keychain until one opens the door.
+
+In web attacks, this means sending hundreds or thousands of login requests
+with different passwords:
+
+    Login attempt 1: username=admin, password=password
+    Login attempt 2: username=admin, password=123456
+    Login attempt 3: username=admin, password=admin123
+    Login attempt 4: username=admin, password=letmein
+    ... and so on
+
+This is usually done by automated scripts, not manually.
+
+HOW WE DETECT IT:
+We keep a counter in memory (like a tally sheet) for each IP address. Every
+time an IP sends a request to /login, /admin, or /register, we add a mark.
+If the same IP makes 5 or more login attempts within 2 minutes, we classify
+it as brute force.
+
+The relevant code is in detector.py in the function called
+"_is_brute_force()". It uses a Python dictionary to store timestamps of each
+login attempt per IP, and checks if there are 5 or more within the time
+window.
+
+
+Q14. What is bot scanning?
+--------------------------------------------------------------------------------
+
+Bots are automated programs that scan thousands of websites looking for
+common vulnerabilities. They do not target specific sites - they scan the
+entire internet.
+
+These bots try well-known paths that are often left exposed by careless
+administrators:
+
+    /phpmyadmin   --> A database management tool (often has default passwords)
+    /wp-admin     --> WordPress admin panel
+    /.env         --> Environment file (often contains database passwords,
+                     API keys)
+    /.git         --> Source code repository (exposes entire codebase)
+    /config.php   --> Configuration file
+    /phpinfo      --> PHP information page (reveals server details)
+
+It is like a burglar walking down a street trying every front door to see
+which ones are unlocked. They are not targeting YOUR house specifically -
+they are checking EVERY house.
+
+HOW WE DETECT IT:
+We have a list of these commonly scanned paths in our detector. When a
+request comes in for any of these paths, we classify it as "Bot Scan."
+
+
+================================================================================
+PART 3: CODE-SPECIFIC QUESTIONS (About YOUR Project)
+================================================================================
+
+
+Q15. Explain the architecture / flow of your system.
+--------------------------------------------------------------------------------
+
+Here is the step-by-step journey of every request that hits our honeypot:
+
+STEP 1: An attacker sends an HTTP request.
+   Example: They open their browser and go to
+   http://ourserver.com/login?username=admin' OR 1=1 --
+
+STEP 2: Flask (our web framework) receives the request in app.py.
+
+STEP 3: BEFORE the request reaches any page, the @app.before_request
+   middleware intercepts it. This is the most important part of our system.
+   Think of it as a security checkpoint at the entrance of a building -
+   everyone must pass through it, no exceptions.
+
+STEP 4: The middleware calls utils.py to EXTRACT all information:
+   - IP address: Where did this request come from?
+   - URL: Which page were they trying to access?
+   - Method: Was it a GET (viewing) or POST (submitting data)?
+   - Headers: What browser or tool are they using?
+   - Payload: What data did they send? (form fields, URL parameters)
+   - Files: Did they try to upload anything?
+
+STEP 5: All this extracted data goes to detector.py which CLASSIFIES the
+   attack. The detector checks the URL and payload against regex patterns
+   for each attack type, in order. The first match wins.
+
+STEP 6: The classification result + all the data goes to logger.py which
+   writes it to TWO places:
+   - A text log file (logs/honeypot.log) for quick viewing
+   - The SQLite database (database.db) for dashboard queries
+
+STEP 7: AFTER all this silent recording, the request continues to the
+   appropriate route in routes.py which returns a fake but convincing
+   response (like "Invalid credentials" for a login attempt).
+
+STEP 8: The attacker sees a normal-looking response and does not know they
+   have been recorded.
+
+STEP 9: An admin opens the dashboard at /dashboard to view charts and logs.
+
+
+Q16. What does @app.before_request do in app.py?
+--------------------------------------------------------------------------------
+
+In Flask, you can set up "hooks" that run at specific points in the request
+lifecycle. @app.before_request is a hook that runs BEFORE every single HTTP
+request is processed by any route.
+
+Think of it like a doorman at a hotel. Every person who enters the hotel must
+pass by the doorman first. The doorman logs their name and face before letting
+them proceed to wherever they want to go in the hotel.
+
+Our @app.before_request function (called "analyze_request") does three things:
+1. Calls utils.py to extract all information from the request
+2. Calls detector.py to classify what type of attack this is (if any)
+3. Calls logger.py to record everything
+
+The important thing is: this happens for EVERY request. Whether someone
+visits /login, /search, /admin, /phpmyadmin, or even a page that does not
+exist - EVERYTHING gets recorded. There is no way to access our honeypot
+without being logged.
+
+We skip logging for /static/ files (CSS, images) because those are just our
+own design assets, not attacker activity.
+
+
+Q17. Explain how detector.py works.
+--------------------------------------------------------------------------------
+
+The detector is the brain of our honeypot. It answers the question: "What type
+of attack is this request?"
+
+Here is how it works, step by step:
+
+STEP 1 - COMBINE: We take the URL and the payload (form data, query
+   parameters) and combine them into one big string. This way we only need
+   to search one string instead of multiple.
+
+STEP 2 - URL DECODE: Many special characters in URLs are encoded. For
+   example, a space becomes %20, a quote becomes %27. We decode these back
+   to their original characters so our patterns can match them.
+
+   Without decoding: admin%27%20OR%201%3D1  (patterns would NOT match)
+   After decoding:   admin' OR 1=1          (patterns WILL match)
+
+   This is done using Python's urllib.parse.unquote() function.
+
+STEP 3 - PATTERN MATCHING: We check the decoded string against regex
+   patterns in this priority order:
+   1. SQL Injection  (checked first because it is most common and dangerous)
+   2. XSS
+   3. Command Injection
+   4. LFI
+   5. RFI
+   6. Directory Traversal
+   7. File Upload Attack  (checks the filename, not the URL)
+   8. Bot Scan            (checks the URL against known paths)
+   9. Brute Force         (checks login attempt frequency)
+
+STEP 4 - RETURN: The FIRST pattern that matches determines the attack type.
+   If nothing matches, we return "Reconnaissance" (meaning someone is just
+   browsing around, which is still worth logging).
+
+The patterns are defined using Python Regular Expressions (regex). We use
+re.compile() to pre-compile them when the program starts. This means the
+computer does the heavy work of understanding the pattern ONCE, and then
+every future check is fast. This is important because every single request
+needs to be checked.
+
+
+Q18. Why do you use re.compile() instead of re.search() directly?
+--------------------------------------------------------------------------------
+
+When you use a regular expression (regex), Python needs to do two things:
+1. COMPILE: Convert the human-readable pattern into a format the computer
+   can efficiently process. This is like a translator converting English
+   to binary.
+2. SEARCH: Actually search the text using the compiled pattern.
+
+If you use re.search("pattern", text) directly, Python does BOTH steps every
+time. Since we check 9+ patterns for EVERY request, that is a lot of
+unnecessary compilation.
+
+With re.compile(), we compile each pattern ONCE when the program starts, and
+then reuse the compiled version for every request. It is like translating a
+recipe from French to English once, and then cooking from the English version
+every time instead of re-translating from French each time.
+
+For our application, this means faster detection, which matters when we might
+be processing many requests per second.
+
+
+Q19. What is a Flask Blueprint? Why did you use them?
+--------------------------------------------------------------------------------
+
+Imagine you are building a house. You COULD put everything in one room - the
+kitchen, bedroom, bathroom, office. But that would be messy and hard to manage.
+Instead, you separate them into different rooms, each with its own purpose.
+
+Flask Blueprints are like rooms in a house. They let us organize our
+application into separate, logical modules:
+
+1. The "honeypot" Blueprint (in routes.py):
+   Contains all the fake trap pages - /login, /search, /upload, etc.
+   These are the pages attackers interact with.
+
+2. The "dashboard" Blueprint (in dashboard.py):
+   Contains the admin analytics dashboard.
+   This is the page WE look at to analyze attacks.
+   All its URLs start with /dashboard/ so they are separate from the traps.
+
+Benefits:
+- ORGANIZATION: Each file has one clear purpose.
+- MAINTAINABILITY: If we need to add a new trap page, we only edit routes.py.
+  If we need to change the dashboard, we only edit dashboard.py.
+- REUSABILITY: We could take the dashboard blueprint and use it in another
+  project.
+- TEAM WORK: Two developers could work on routes.py and dashboard.py at the
+  same time without conflicts.
+
+
+Q20. Explain the database schema.
+--------------------------------------------------------------------------------
+
+A database schema is like a form template. It defines what information we
+collect for each attack. Here is what we store:
+
+FIELD             WHAT IT STORES                EXAMPLE
+---------------------------------------------------------------------------
+id                Unique number for each        1, 2, 3, 4...
+                  attack (auto-generated)
+
+timestamp         When the attack happened       2026-03-22T23:51:50
+
+ip_address        The attacker's IP address      192.168.1.105
+                  (their computer's address
+                  on the internet)
+
+method            How they sent the request      GET (viewing a page)
+                                                 POST (submitting a form)
+
+url               What page they accessed         /login?username=admin
+
+headers           Technical details about         Browser type, language,
+                  their request                   accepted formats (stored
+                                                  as JSON text)
+
+payload           The actual data they sent       username=admin' OR 1=1 --
+                  (the attack content is
+                  usually here)
+
+attack_type       What we classified it as        SQL Injection
+
+user_agent        What browser or tool they       Mozilla/5.0 (Chrome)
+                  used                            OR curl/8.5.0
+
+file_uploaded     If they uploaded a file,         shell.php
+                  what was it called?
+
+response_code     What HTTP status code we         200 (OK)
+                  sent back                        404 (Not Found)
+
+We also create INDEXES on timestamp, ip_address, and attack_type. An index
+is like the index at the back of a textbook - it helps the database find
+things faster. Without indexes, the database would have to read EVERY row
+to find attacks from a specific IP. With indexes, it can jump directly to
+the right rows.
+
+
+Q21. Why SQLite and not MySQL or PostgreSQL?
+--------------------------------------------------------------------------------
+
+SQLite is the simplest possible database. Here is why it is perfect for us:
+
+1. ZERO SETUP: MySQL and PostgreSQL require you to install a separate database
+   server, create a user account, set a password, create a database, etc.
+   SQLite is just a single FILE on your computer (database.db). That is it.
+   No server to install, no passwords to configure.
+
+2. BUILT INTO PYTHON: Python comes with SQLite support built in. You just
+   write "import sqlite3" and you are ready. No extra installations needed.
+
+3. PORTABLE: The entire database is ONE file. You can copy it to a USB drive,
+   email it, or move it to another computer. With MySQL, your data is locked
+   inside the MySQL server.
+
+4. PERFECT FOR OUR SCALE: SQLite handles thousands of rows easily. Our
+   honeypot might log a few hundred or thousand attacks per day - well within
+   SQLite's capabilities.
+
+WHEN WOULD WE SWITCH? If this were a production honeypot handling millions
+of requests per day from multiple servers, we would switch to PostgreSQL
+because it handles high concurrency (many simultaneous writes) better. But
+for a minor project, SQLite is ideal.
+
+
+Q22. What does conn.row_factory = sqlite3.Row do in database.py?
+--------------------------------------------------------------------------------
+
+When you query SQLite normally, it returns results as simple tuples (ordered
+lists). For example:
+
+    Without row_factory:
+    result = (1, "2026-03-22", "192.168.1.1", "GET", "/login")
+
+    To get the IP address, you would write: result[2]
+    But what does [2] mean? You have to remember that IP is the third item.
+    This is confusing and error-prone.
+
+    With row_factory = sqlite3.Row:
+    result["ip_address"]  --> "192.168.1.1"
+    result["attack_type"] --> "SQL Injection"
+
+    Now you can access data by column NAME instead of position NUMBER.
+    This makes the code much more readable and less likely to have bugs.
+
+It is like the difference between:
+- "Give me item #3 from the list" (confusing) vs
+- "Give me the IP address" (clear)
+
+
+Q23. Explain the logging system (logger.py).
+--------------------------------------------------------------------------------
+
+We use DUAL LOGGING, meaning every attack is saved in TWO different places.
+Think of it as writing the same information in both a notebook AND a computer
+spreadsheet.
+
+PLACE 1 - LOG FILE (logs/honeypot.log):
+This is a plain text file. Each line is one attack, written in a
+human-readable format:
+
+    2026-03-22 23:51:50 | [SQL Injection] GET /login?username=admin...
+    | IP: 192.168.1.1 | Payload: admin' OR 1=1 -- | UA: curl/8.5.0
+
+This is useful for quick inspection. You can open a terminal and run
+"tail -f logs/honeypot.log" to watch attacks happening in real-time
+(like a live security camera feed).
+
+We use Python's built-in "logging" module for this, which is a standard
+library specifically designed for application logging.
+
+PLACE 2 - DATABASE (database.db):
+The same data is stored in a structured SQLite database table. This is
+useful for:
+- Searching (find all attacks from IP 192.168.1.1)
+- Filtering (show only SQL Injection attacks)
+- Counting (how many attacks today?)
+- The dashboard charts (uses database queries for statistics)
+
+WHY BOTH? Redundancy. If the database file gets corrupted, the log file
+still has all the data. If the log file gets too big and we delete it,
+the database still has everything. Also, each format has its strengths:
+text files for quick reading, databases for querying and analysis.
+
+
+Q24. What does extract_request_data() in utils.py do?
+--------------------------------------------------------------------------------
+
+When someone visits our honeypot, their browser (or tool) sends an HTTP
+request. This request contains a LOT of information. The extract_request_data()
+function is like a receptionist who meets every visitor and writes down ALL
+their details on a form.
+
+Here is what it extracts:
+
+1. IP ADDRESS: The visitor's internet address. We check two sources:
+   - First, the "X-Forwarded-For" header (this is set when the request
+     comes through a proxy or load balancer)
+   - If that is not there, we use the direct connection IP
+
+2. METHOD: GET (they are viewing a page) or POST (they are submitting a form)
+
+3. URL: The full page path including query parameters
+   Example: /login?username=admin&password=test
+
+4. HEADERS: All HTTP headers as a dictionary. Headers include information
+   like what browser they use, what language they speak, what format they
+   accept, etc.
+
+5. PAYLOAD: This is the most important part - the actual DATA they sent.
+   We check multiple sources and combine them:
+   - Query string (the ?key=value part of the URL)
+   - Form data (data submitted via HTML forms)
+   - JSON body (data sent by API calls)
+   - Raw body (anything else)
+
+6. USER AGENT: A string that identifies what browser or tool they are
+   using. Examples:
+   - "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..." = Chrome browser
+   - "curl/8.5.0" = curl command-line tool
+   - "sqlmap/1.7" = sqlmap hacking tool
+
+7. FILE UPLOADED: If they uploaded any files, what were the filenames?
+
+
+Q25. How does file upload capture work? (file_capture.py)
+--------------------------------------------------------------------------------
+
+When an attacker uploads a file (like a PHP webshell), we want to:
+1. SAVE the file for later analysis (forensics)
+2. Make sure the file NEVER gets executed
+3. Record its name for attack classification
+
+Here is what our capture_upload() function does:
+
+STEP 1 - SANITIZE THE FILENAME:
+   We use werkzeug's secure_filename() function. This removes any dangerous
+   characters from the filename.
+   Example: "../../evil/shell.php" becomes "evil_shell.php"
+   This prevents the attacker from using directory traversal in filenames
+   to save files outside our uploads folder.
+
+STEP 2 - ADD A TIMESTAMP:
+   We prepend the current date and time to the filename.
+   Example: "shell.php" becomes "20260322_235000_shell.php"
+   This ensures no two files overwrite each other, and we know exactly
+   when each file was uploaded.
+
+STEP 3 - SAVE TO uploads/ FOLDER:
+   The file is saved to the uploads/ directory. This folder is separate
+   from the web server's document root, so the file can NEVER be accessed
+   or executed through the web. It is just stored as evidence.
+
+IMPORTANT: We NEVER execute uploaded files. They are quarantined. It is like
+a mail room that receives suspicious packages - they store them safely
+without opening them.
+
+
+Q26. How does the dashboard work?
+--------------------------------------------------------------------------------
+
+The dashboard is the control room where you (the administrator) see
+everything that is happening. It has 4 endpoints:
+
+1. GET /dashboard/
+   This loads the main HTML page. The server fetches basic stats from the
+   database and embeds them in the page. When the page loads in the browser,
+   JavaScript takes over and fetches more data.
+
+2. GET /dashboard/api/stats
+   This is an API endpoint that returns statistics as JSON data:
+   - Total attack count
+   - Unique IP count
+   - Today's attack count
+   - Breakdown by attack type (SQL Injection: 5, XSS: 3, etc.)
+   - Top 10 attacker IPs
+   - Top 10 attacked endpoints
+   - Daily attack counts for the last 30 days
+
+3. GET /dashboard/api/logs
+   This returns the actual attack log entries. It supports:
+   - FILTERING by IP address (show only attacks from 192.168.1.1)
+   - FILTERING by attack type (show only SQL Injection)
+   - PAGINATION with limit/offset (show 100 logs starting from #200)
+
+4. GET /dashboard/download
+   This exports ALL logs as a CSV file that you can open in Excel or
+   Google Sheets for further analysis.
+
+The frontend uses CHART.JS, a popular JavaScript library for creating charts.
+When the dashboard page loads:
+- JavaScript calls /dashboard/api/stats using fetch()
+- The JSON response is fed into Chart.js to create 4 charts:
+  a. Line chart: Attacks per day over the last 30 days
+  b. Doughnut chart: Distribution of attack types
+  c. Horizontal bar chart: Top attacker IPs
+  d. Horizontal bar chart: Most attacked endpoints
+
+
+Q27. Why do you URL-decode before detection?
+--------------------------------------------------------------------------------
+
+When you type special characters in a web browser, they get "percent-encoded"
+for safe transmission. This is like translating "hello world" into morse
+code for transmission over radio.
+
+Examples:
+   Space     -->  %20
+   Quote (') -->  %27
+   Equals (=) --> %3D
+   Semicolon (;) --> %3B
+   Less than (<) --> %3C
+
+So an attacker's SQL Injection payload:
+   admin' OR 1=1 --
+
+Gets sent as:
+   admin%27%20OR%201%3D1%20--
+
+If we try to match our regex pattern "OR 1=1" against the encoded version,
+it would NOT match because the actual text is "OR%201%3D1" (not "OR 1=1").
+
+By URL-decoding FIRST using Python's urllib.parse.unquote(), we convert:
+   admin%27%20OR%201%3D1%20--  -->  admin' OR 1=1 --
+
+NOW our regex patterns can match correctly.
+
+Without this step, attackers could bypass ALL our detection just by
+URL-encoding their payloads. This was actually a bug we discovered during
+testing and fixed.
+
+
+Q28. What is the @app.errorhandler(404)? Why is it important?
+--------------------------------------------------------------------------------
+
+Normally, when someone visits a page that does not exist on a website, the
+web server returns a "404 Not Found" error.
+
+In our honeypot, we customize this behavior with @app.errorhandler(404).
+Instead of showing a default error page, we show our normal page AND still
+log the request.
+
+This is CRITICAL because of bot scanning. Bots try paths like /phpmyadmin,
+/.env, /wp-admin, /.git, and hundreds more. These pages do not exist on our
+server. Without the 404 handler, Flask would show a default error and the
+@before_request middleware would NOT log these attempts.
+
+With our 404 handler, every request to a non-existent page still gets:
+1. Intercepted by the before_request middleware
+2. Checked by the attack detector
+3. Logged to the database and log file
+4. Classified (usually as "Bot Scan" or "Reconnaissance")
+
+It ensures that NOTHING slips through unrecorded.
+
+
+================================================================================
+PART 4: TECHNOLOGY AND DESIGN QUESTIONS
+================================================================================
+
+
+Q29. Why Flask and not Django or Node.js?
+--------------------------------------------------------------------------------
+
+FLASK:
+Flask is a "microframework" - it gives you just the basics and lets you
+build the rest yourself. It is like getting a plain pizza base and choosing
+your own toppings.
+- Very lightweight, only a few hundred KB
+- We only need basic routing and request handling
+- The before_request hook is perfect for our middleware
+- Minimal boilerplate code (the entire app is readable in minutes)
+
+DJANGO:
+Django is a "full framework" - it comes with a database ORM, admin panel,
+user authentication, form handling, etc. It is like ordering a fully loaded
+pizza with toppings you did not ask for.
+- Too heavy for our needs. We do not need user authentication, an admin
+  panel, or an ORM. We just need to receive requests and log them.
+- The extra features would add complexity without benefit.
+
+NODE.JS:
+Node.js uses JavaScript and is great for real-time applications.
+- Would work fine, but Python has better libraries for data analysis and
+  regex processing.
+- Python is also more commonly taught in college courses, making the
+  project more accessible.
+
+BOTTOM LINE: For a focused tool like a honeypot, Flask is the perfect
+balance of simplicity and capability.
+
+
+Q30. What is WSGI?
+--------------------------------------------------------------------------------
+
+WSGI stands for Web Server Gateway Interface. It is a specification (a set
+of rules) that defines how a web server communicates with a Python web
+application.
+
+Think of it as a translator between two people who speak different languages:
+- The WEB SERVER (like Nginx or Apache) speaks "HTTP" - it knows how to
+  receive requests from the internet.
+- The PYTHON APP (our Flask code) speaks "Python" - it knows how to
+  process the request and generate a response.
+- WSGI is the translator that lets them communicate.
+
+When we run "python app.py", Flask starts its own tiny built-in web server.
+This is fine for testing, but it is slow and cannot handle many users at once.
+
+In production, you would use a proper WSGI server like Gunicorn:
+    gunicorn -w 4 -b 0.0.0.0:80 app:app
+
+This tells Gunicorn to:
+- Use 4 worker processes (handles 4 requests simultaneously)
+- Listen on all network interfaces on port 80
+- Use the "app" object from our "app.py" file
+
+
+Q31. What security measures does the honeypot itself have?
+--------------------------------------------------------------------------------
+
+Even though we WANT attackers to interact with our honeypot, we still need
+to protect the honeypot server itself from being compromised. Here is what
+we do:
+
+1. NO REAL FUNCTIONALITY: The login page does not check any real database.
+   The command console does not run any real commands. The file viewer does
+   not read any real files. There is NOTHING to actually exploit.
+
+2. FILE SANITIZATION: When attackers upload files, we use secure_filename()
+   to strip dangerous characters and NEVER execute the uploaded files.
+
+3. HTML ESCAPING: When displaying attacker payloads on the dashboard, we
+   use html.escape() to convert dangerous characters. Without this, an
+   attacker could inject <script> tags that would execute when an admin
+   views the dashboard (this would be an ironic XSS attack on our own
+   dashboard).
+
+4. UPLOAD SIZE LIMIT: We set MAX_CONTENT_LENGTH to 16 MB. Without this,
+   an attacker could upload giant files to fill up our disk space.
+
+5. ISOLATED FILE STORAGE: Uploaded files go to the uploads/ folder which
+   is not served by the web server. You cannot access uploaded files
+   through the browser.
+
+
+Q32. Can this honeypot be detected/bypassed by an attacker?
+--------------------------------------------------------------------------------
+
+Yes, a skilled attacker might notice several clues:
+
+1. The login ALWAYS fails - no matter what credentials you try. A real site
+   would let you in with the right password.
+
+2. The search ALWAYS returns the same three results, regardless of what you
+   search for.
+
+3. There are no real session cookies or CSRF tokens - real websites generate
+   unique tokens for form submissions.
+
+4. The server response header says "Flask" or "Werkzeug" - a real corporate
+   site would usually hide this.
+
+5. All responses come back instantly - a real site with database queries
+   would have slight delays.
+
+HOW TO IMPROVE:
+- Add random delays (50-200ms) to simulate real database queries
+- Vary the search results based on the query
+- Generate realistic session cookies
+- Occasionally let a login "succeed" (show a fake dashboard)
+- Hide the Flask server signature in response headers
+- Add CSRF tokens to forms
+
+
+Q33. How would you deploy this in a real environment?
+--------------------------------------------------------------------------------
+
+For a real deployment, you would:
+
+1. USE A PROPER WEB SERVER: Replace Flask's built-in server with Gunicorn
+   (a production WSGI server) behind Nginx (a reverse proxy).
+
+2. USE DOCKER: Package the entire honeypot in a Docker container. This
+   isolates it from your real systems. If the attacker somehow compromises
+   it, they are stuck inside the container.
+
+3. USE A SEPARATE NETWORK: Deploy the honeypot on its own network segment
+   (VLAN). Even if it is compromised, the attacker cannot reach your real
+   servers.
+
+4. ADD SSL/TLS: Use HTTPS with a real certificate. Modern attackers are
+   suspicious of HTTP-only sites.
+
+5. ADD DNS: Give it a realistic-looking domain name like
+   "internal-portal.yourcompany.com"
+
+6. LOG FORWARDING: Send logs to a centralized SIEM (Security Information
+   and Event Management) system like Splunk or ELK Stack for analysis.
+
+7. MONITORING: Set up alerts for specific attack types or high volumes of
+   traffic.
+
+
+================================================================================
+PART 5: ADVANCED / FOLLOW-UP QUESTIONS
+================================================================================
+
+
+Q34. What improvements would you make if you had more time?
+--------------------------------------------------------------------------------
+
+1. GEOIP LOOKUP: Use a service like MaxMind GeoLite2 to convert IP
+   addresses to countries. This would let us show a world map of where
+   attacks come from.
+
+2. EMAIL ALERTS: Send an email to the admin when a critical attack is
+   detected (like a successful-looking SQL Injection or a massive brute
+   force attempt).
+
+3. AUTOMATIC IP BLOCKING: If an IP sends too many attacks, automatically
+   block it using firewall rules (iptables on Linux).
+
+4. MACHINE LEARNING: Instead of fixed regex patterns, train a machine
+   learning model to classify attacks. This would catch new/unknown attack
+   patterns that our regex misses.
+
+5. MULTIPLE FAKE SERVICES: Add fake FTP, SSH, and SMTP services alongside
+   the web honeypot to capture a wider range of attacks.
+
+6. ATTACK HEATMAP: A visual world map showing where attacks originate,
+   with bigger dots for more active attackers.
+
+7. REST API FOR LOGS: Allow other security tools to pull our log data
+   through a REST API for integration.
+
+8. RATE LIMITING: Slow down responses to known attackers to waste their
+   time (also called a "tarpit").
+
+
+Q35. How would you add machine learning to this system?
+--------------------------------------------------------------------------------
+
+Here is a simplified explanation:
+
+CURRENT APPROACH (Regex):
+We tell the computer exactly what to look for:
+"If you see the words UNION SELECT, it is SQL Injection."
+This works for known attacks but misses new ones.
+
+MACHINE LEARNING APPROACH:
+We show the computer thousands of examples and let it learn the patterns:
+"Here are 5000 SQL Injection attacks and 5000 normal requests. Figure out
+what makes them different."
+
+HOW TO IMPLEMENT:
+
+Step 1 - COLLECT DATA: We already have this! Our existing honeypot logs
+   are the training data. Each log entry has the request details and the
+   attack type label.
+
+Step 2 - EXTRACT FEATURES: Convert each request into numbers that the ML
+   model can understand:
+   - URL length (long URLs might be suspicious)
+   - Number of special characters (quotes, semicolons, etc.)
+   - Whether it contains SQL keywords
+   - Number of "../" sequences
+   - Request method (GET=0, POST=1)
+   - Time of day
+
+Step 3 - TRAIN A MODEL: Feed this data into a classifier algorithm like:
+   - Random Forest (good for structured data, easy to interpret)
+   - SVM (Support Vector Machine, good for text classification)
+   - Neural Network (most powerful, but needs more data)
+
+Step 4 - USE THE MODEL: Replace or supplement detector.py with the trained
+   model. When a request comes in, extract its features and let the model
+   predict the attack type.
+
+BENEFIT: The ML model can detect attacks that look different from our
+regex patterns but share similar statistical properties with known attacks.
+
+
+Q36. What is the difference between signature-based and anomaly-based detection?
+--------------------------------------------------------------------------------
+
+SIGNATURE-BASED DETECTION (what our system uses):
+Think of it like a "Most Wanted" poster at a police station. The police
+have photos and descriptions of known criminals. When someone walks in,
+they compare the face to the posters. If it matches, they catch the person.
+
+Our regex patterns are like "Most Wanted" posters for attacks:
+- "UNION SELECT" = wanted for SQL Injection
+- "<script>" = wanted for XSS
+- "../../" = wanted for Directory Traversal
+
+Pros: Very accurate for known attacks, very few false positives.
+Cons: Cannot catch NEW criminals whose faces are not on the poster.
+
+ANOMALY-BASED DETECTION:
+Think of it like a teacher who knows normal student behavior. If a student
+who usually scores 90% suddenly scores 20%, the teacher is suspicious even
+without knowing exactly what went wrong.
+
+An anomaly-based system learns what "normal" traffic looks like:
+- Average URL length is 30 characters
+- Most requests are GET to /login, /search, /home
+- Requests typically come between 9 AM and 6 PM
+
+If a request has a 500-character URL at 3 AM targeting /phpMyAdmin - that
+is highly anomalous, and gets flagged even if the specific attack pattern is
+unknown.
+
+Pros: Can detect never-before-seen attacks (zero-day attacks).
+Cons: Higher false positive rate (legitimate unusual activity gets flagged).
+
+A PRODUCTION SYSTEM would use BOTH together for maximum coverage.
+
+
+Q37. How does the brute-force detection handle distributed attacks?
+--------------------------------------------------------------------------------
+
+CURRENT LIMITATION:
+Our system tracks login attempts PER IP ADDRESS. If one IP sends 10 login
+attempts in 2 minutes, we flag it as brute force.
+
+But what if the attacker uses a BOTNET (thousands of hacked computers)?
+Each computer sends only 1-2 login attempts. No single IP exceeds our
+threshold of 5, so the attack goes undetected. But collectively, there
+might be 10,000 login attempts from 5,000 different IPs.
+
+HOW TO FIX THIS:
+
+1. TRACK BY USERNAME: Instead of (or in addition to) tracking by IP,
+   track how many times the same USERNAME is being targeted. If "admin"
+   gets 100 login attempts in 5 minutes from different IPs, that is
+   suspicious.
+
+2. GLOBAL RATE LIMITING: Track the TOTAL number of login attempts across
+   ALL IPs. If the login page gets 50 requests per minute (normally it
+   gets 5), something is wrong.
+
+3. CREDENTIAL STUFFING DETECTION: Look for patterns like sequential
+   usernames or passwords from known leaked databases.
+
+4. CAPTCHA: Add a challenge (like "identify the traffic lights") after
+   3 failed login attempts from ANY source.
+
+
+================================================================================
+PART 6: KEY CODE SECTIONS THEY MAY POINT TO AND ASK "EXPLAIN THIS"
+================================================================================
+
+
+If they open DETECTOR.PY and ask "what is this?":
+   Point to the regex patterns at the top. Explain that re.compile()
+   creates pre-compiled pattern matchers for each attack type. Then
+   point to detect_attack() and walk through the priority chain.
+
+If they open APP.PY and ask "explain the middleware":
+   Point to @app.before_request and the analyze_request() function.
+   Explain that this runs BEFORE every request and is the core of the
+   honeypot - the silent interceptor.
+
+If they open DATABASE.PY and ask "explain the schema":
+   Point to init_db() and the CREATE TABLE statement. Walk through each
+   column. Then point to get_stats() and explain the SQL aggregation
+   queries (COUNT, GROUP BY, ORDER BY).
+
+If they open LOGGER.PY and ask "why two logging methods?":
+   Explain dual logging - text file for quick human reading, database for
+   querying and dashboard analytics. Redundancy = never lose data.
+
+If they open ROUTES.PY and ask "why don't these pages do anything real?":
+   Explain that this is a LOW-INTERACTION honeypot. The pages only need to
+   LOOK real, not BE real. Real functionality would be a security risk.
+
+If they open UTILS.PY and ask "what is X-Forwarded-For?":
+   Explain that when a request comes through a proxy or load balancer, the
+   original IP is lost. The proxy adds the original IP in the
+   X-Forwarded-For header. We check this header first, then fall back to
+   the direct connection IP.
+
+If they open DASHBOARD.HTML and ask "what is Chart.js?":
+   Explain it is an open-source JavaScript library for creating interactive
+   charts. We load it from a CDN (Content Delivery Network). We use fetch()
+   to get data from our API endpoint and then pass it to Chart.js to render
+   the visualizations.
+
+If they open STYLE.CSS and ask "what is glassmorphism?":
+   Glassmorphism is a modern design trend where UI elements look like
+   frosted glass - semi-transparent with blur effects. We achieve this
+   using backdrop-filter: blur() and semi-transparent backgrounds with
+   rgba() colors.
+
+
+================================================================================
+PRESENTATION TIPS
+================================================================================
+
+1. START WITH THE DASHBOARD: Open the dashboard first to show the final
+   result. Charts and statistics are visually impressive.
+
+2. LIVE DEMO: During the presentation, open a terminal and run a few curl
+   attack commands. Then refresh the dashboard to show the attacks appearing
+   in real-time. This is very impressive.
+
+3. ARCHITECTURE FIRST: Before diving into code, explain the flow:
+   Request -> Middleware -> Detector -> Logger -> Database -> Dashboard.
+   Draw this on the whiteboard if possible.
+
+4. KNOW YOUR ATTACKS: Be ready to explain SQL Injection and XSS in detail.
+   These are the most commonly asked about.
+
+5. KNOW YOUR REGEX: If asked, be able to explain at least one regex pattern.
+   A good one is OR 1=1 for SQL Injection - simple and easy to explain.
+
+6. KNOW THE "WHY": For every technology choice, know WHY you chose it.
+   "Why Flask?" "Why SQLite?" "Why Chart.js?" These are common questions.
+
+7. KNOW THE LIMITATIONS: Admitting limitations (like distributed brute
+   force detection or bypassing the honeypot) shows maturity and deep
+   understanding.
+
+================================================================================

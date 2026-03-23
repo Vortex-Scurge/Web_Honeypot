@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍯 Honeypot Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body class="dashboard-body">
+    <nav class="topnav dashboard-nav">
+        <div class="nav-brand">🍯 Honeypot Dashboard</div>
+        <div class="nav-links">
+            <a href="/">Honeypot Home</a>
+            <a href="/dashboard/download" class="btn btn-sm">📥 Export CSV</a>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <!-- ── Stat Cards ────────────────────────────────────────── -->
+        <section class="stat-cards">
+            <div class="stat-card" style="--accent: #f44336;">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ stats.total_attacks }}</span>
+                    <span class="stat-label">Total Attacks</span>
+                </div>
+            </div>
+            <div class="stat-card" style="--accent: #ff9800;">
+                <div class="stat-icon">🌐</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ stats.unique_ips }}</span>
+                    <span class="stat-label">Unique IPs</span>
+                </div>
+            </div>
+            <div class="stat-card" style="--accent: #4caf50;">
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ stats.today_attacks }}</span>
+                    <span class="stat-label">Today's Attacks</span>
+                </div>
+            </div>
+            <div class="stat-card" style="--accent: #2196f3;">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ stats.most_common_type }}</span>
+                    <span class="stat-label">Top Attack Type</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Charts ────────────────────────────────────────────── -->
+        <section class="chart-grid">
+            <div class="chart-card">
+                <h3>📈 Attacks Per Day</h3>
+                <canvas id="dailyChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🍩 Attack Type Distribution</h3>
+                <canvas id="typeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🏴 Top Attacker IPs</h3>
+                <canvas id="ipChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>🎯 Most Attacked Endpoints</h3>
+                <canvas id="endpointChart"></canvas>
+            </div>
+        </section>
+
+        <!-- ── Search / Filter ──────────────────────────────────── -->
+        <section class="filter-bar">
+            <h3>🔍 Search Logs</h3>
+            <div class="filter-controls">
+                <input type="text" id="filterIp" placeholder="Filter by IP address">
+                <select id="filterType">
+                    <option value="">All Attack Types</option>
+                    <option value="SQL Injection">SQL Injection</option>
+                    <option value="XSS">XSS</option>
+                    <option value="Command Injection">Command Injection</option>
+                    <option value="LFI">LFI</option>
+                    <option value="RFI">RFI</option>
+                    <option value="Directory Traversal">Directory Traversal</option>
+                    <option value="File Upload Attack">File Upload Attack</option>
+                    <option value="Bot Scan">Bot Scan</option>
+                    <option value="Brute Force">Brute Force</option>
+                    <option value="Reconnaissance">Reconnaissance</option>
+                </select>
+                <button class="btn" onclick="loadLogs()">Search</button>
+            </div>
+        </section>
+
+        <!-- ── Log Table ─────────────────────────────────────────── -->
+        <section class="log-section">
+            <h3>📋 Recent Attack Logs</h3>
+            <div class="table-wrap">
+                <table id="logTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp</th>
+                            <th>IP Address</th>
+                            <th>Method</th>
+                            <th>URL</th>
+                            <th>Attack Type</th>
+                            <th>User Agent</th>
+                            <th>Payload</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logBody">
+                        <tr><td colspan="8" class="empty">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ── Payload Modal ──────────────────────────────────────── -->
+        <div id="payloadModal" class="modal" onclick="if(event.target===this)closeModal()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🔎 Payload Details</h3>
+                    <button onclick="closeModal()" class="modal-close">&times;</button>
+                </div>
+                <pre id="payloadContent"></pre>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /* ── Color palette ───────────────────────────────────────── */
+        const COLORS = [
+            '#f44336','#e91e63','#9c27b0','#673ab7','#3f51b5',
+            '#2196f3','#00bcd4','#009688','#4caf50','#ff9800',
+            '#ff5722','#795548'
+        ];
+
+        /* ── Fetch stats and render charts ───────────────────────── */
+        fetch('/dashboard/api/stats')
+            .then(r => r.json())
+            .then(data => {
+                // Daily attacks line chart
+                new Chart(document.getElementById('dailyChart'), {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(data.daily_attacks),
+                        datasets: [{
+                            label: 'Attacks',
+                            data: Object.values(data.daily_attacks),
+                            borderColor: '#f44336',
+                            backgroundColor: 'rgba(244,67,54,0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#f44336',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { labels: { color: '#ccc' } } },
+                        scales: {
+                            x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                            y: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+                        }
+                    }
+                });
+
+                // Attack type doughnut
+                new Chart(document.getElementById('typeChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(data.attack_types),
+                        datasets: [{
+                            data: Object.values(data.attack_types),
+                            backgroundColor: COLORS.slice(0, Object.keys(data.attack_types).length),
+                            borderWidth: 0,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#ccc', padding: 12 } } }
+                    }
+                });
+
+                // Top IPs bar chart
+                new Chart(document.getElementById('ipChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.top_ips),
+                        datasets: [{
+                            label: 'Attacks',
+                            data: Object.values(data.top_ips),
+                            backgroundColor: COLORS,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+                            y: { ticks: { color: '#aaa' }, grid: { display: false } }
+                        }
+                    }
+                });
+
+                // Top endpoints bar chart
+                new Chart(document.getElementById('endpointChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.top_endpoints).map(u => u.length > 30 ? u.slice(0,30)+'…' : u),
+                        datasets: [{
+                            label: 'Hits',
+                            data: Object.values(data.top_endpoints),
+                            backgroundColor: COLORS,
+                            borderRadius: 6,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+                            y: { ticks: { color: '#aaa', font: { size: 11 } }, grid: { display: false } }
+                        }
+                    }
+                });
+            });
+
+        /* ── Load logs ────────────────────────────────────────────── */
+        function loadLogs() {
+            const ip = document.getElementById('filterIp').value;
+            const type = document.getElementById('filterType').value;
+            let url = '/dashboard/api/logs?limit=100';
+            if (ip) url += '&ip=' + encodeURIComponent(ip);
+            if (type) url += '&type=' + encodeURIComponent(type);
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    const body = document.getElementById('logBody');
+                    if (!data.logs.length) {
+                        body.innerHTML = '<tr><td colspan="8" class="empty">No logs found.</td></tr>';
+                        return;
+                    }
+                    body.innerHTML = data.logs.map(log => `
+                        <tr>
+                            <td>${log.id}</td>
+                            <td>${log.timestamp ? log.timestamp.replace('T',' ').slice(0,19) : ''}</td>
+                            <td>${esc(log.ip_address)}</td>
+                            <td><span class="method-badge">${esc(log.method)}</span></td>
+                            <td class="url-cell" title="${esc(log.url)}">${esc(log.url)}</td>
+                            <td><span class="type-badge type-${slugify(log.attack_type)}">${esc(log.attack_type)}</span></td>
+                            <td class="ua-cell" title="${esc(log.user_agent)}">${esc(log.user_agent).slice(0,40)}</td>
+                            <td><button class="btn btn-sm" onclick='showPayload(${JSON.stringify(JSON.stringify(log.payload||""))})'>View</button></td>
+                        </tr>
+                    `).join('');
+                });
+        }
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s || '';
+            return d.innerHTML;
+        }
+        function slugify(s) { return (s||'').toLowerCase().replace(/\s+/g,'-'); }
+
+        function showPayload(raw) {
+            document.getElementById('payloadContent').textContent = JSON.parse(raw);
+            document.getElementById('payloadModal').classList.add('active');
+        }
+        function closeModal() {
+            document.getElementById('payloadModal').classList.remove('active');
+        }
+
+        // Load logs on page load
+        loadLogs();
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>🔒 Employee Login</h2>
+    <form method="POST" action="/login">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter username" required>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter password" required>
+        <button type="submit" class="btn">Sign In</button>
+    </form>
+    {% if message %}
+    <div class="alert alert-error">{{ message }}</div>
+    {% endif %}
+    <p class="form-hint">Forgot password? Contact IT at ext. 4201</p>
+</div>
+{% endblock %}

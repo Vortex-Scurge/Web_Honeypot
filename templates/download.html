@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>📥 File Downloads</h2>
+    <p>Enter a filename to download from the server:</p>
+    <form method="GET" action="/download">
+        <input type="text" name="file" placeholder="readme.txt" value="{{ filename }}">
+        <button type="submit" class="btn">Download</button>
+    </form>
+    {% if message %}
+    <div class="alert alert-error">{{ message }}</div>
+    {% endif %}
+    <div class="content-box">
+        <h4>Available files:</h4>
+        <ul>
+            <li>📄 readme.txt</li>
+            <li>📄 changelog.md</li>
+            <li>📄 employee_handbook.pdf</li>
+            <li>📄 network_diagram.png</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

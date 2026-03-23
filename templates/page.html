@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>📄 Page Viewer</h2>
+    <p>Viewing page: <strong>{{ page_id }}</strong></p>
+    <div class="content-box">
+        {{ content | safe }}
+        <p>Last updated: 2025-01-15 by admin</p>
+    </div>
+    <div class="page-nav">
+        <a href="/page?id=about" class="btn btn-sm">About</a>
+        <a href="/page?id=contact" class="btn btn-sm">Contact</a>
+        <a href="/page?id=internal-memo" class="btn btn-sm">Internal Memo</a>
+    </div>
+</div>
+{% endblock %}

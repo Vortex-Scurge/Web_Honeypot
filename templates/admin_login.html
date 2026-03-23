@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>🛡️ Admin Panel — Restricted Access</h2>
+    <form method="POST" action="/admin">
+        <label for="admin_user">Admin Username</label>
+        <input type="text" id="admin_user" name="username" placeholder="admin" required>
+        <label for="admin_pass">Admin Password</label>
+        <input type="password" id="admin_pass" name="password" placeholder="••••••••" required>
+        <button type="submit" class="btn btn-danger">Authenticate</button>
+    </form>
+    {% if message %}
+    <div class="alert alert-error">{{ message }}</div>
+    {% endif %}
+    <p class="form-hint">⚠️ Unauthorized access attempts are monitored and logged.</p>
+</div>
+{% endblock %}

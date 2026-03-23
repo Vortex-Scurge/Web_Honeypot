@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acme Corp — Internal Portal</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="topnav">
+        <div class="nav-brand">🏢 Acme Corp</div>
+        <div class="nav-links">
+            <a href="/login">Login</a>
+            <a href="/search">Search</a>
+            <a href="/upload">Upload</a>
+            <a href="/page?id=home">Pages</a>
+            <a href="/admin">Admin</a>
+            <a href="/config">Config</a>
+            <a href="/download?file=readme.txt">Downloads</a>
+            <a href="/execute">Console</a>
+            <a href="/register">Register</a>
+        </div>
+    </nav>
+    <main class="container">
+        {% block content %}
+        <div class="hero">
+            <h1>Welcome to Acme Corp Internal Portal</h1>
+            <p>Access company resources, manage your account, and collaborate with your team.</p>
+            <div class="hero-cards">
+                <div class="card">
+                    <h3>📁 Documents</h3>
+                    <p>Access internal documents and reports.</p>
+                    <a href="/search" class="btn">Search Docs</a>
+                </div>
+                <div class="card">
+                    <h3>⬆️ File Upload</h3>
+                    <p>Upload files to the shared drive.</p>
+                    <a href="/upload" class="btn">Upload</a>
+                </div>
+                <div class="card">
+                    <h3>⚙️ Server Console</h3>
+                    <p>Run diagnostics on the server.</p>
+                    <a href="/execute" class="btn">Console</a>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2025 Acme Corp. All rights reserved. | Internal use only.</p>
+    </footer>
+</body>
+</html>

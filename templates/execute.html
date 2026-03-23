@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>💻 Server Console</h2>
+    <form method="POST" action="/execute">
+        <label for="cmd">Enter command:</label>
+        <input type="text" id="cmd" name="cmd" placeholder="whoami" value="{{ cmd }}">
+        <button type="submit" class="btn">Execute</button>
+    </form>
+    {% if output %}
+    <div class="content-box terminal-box">
+        <pre>$ {{ cmd }}
+{{ output }}</pre>
+    </div>
+    {% endif %}
+    <p class="form-hint">Restricted shell — only authorized commands allowed.</p>
+</div>
+{% endblock %}

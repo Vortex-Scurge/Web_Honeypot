@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>⚙️ Server Configuration</h2>
+    <div class="content-box config-box">
+        <pre>
+# Server Configuration — CONFIDENTIAL
+# Generated: 2025-01-20
+
+[database]
+host     = db.internal.acme.corp
+port     = 5432
+name     = acme_production
+user     = db_admin
+password = Pr0d_S3cur3!_2025
+
+[smtp]
+server   = mail.acme.corp
+port     = 587
+user     = noreply@acme.corp
+password = M@ilP@ss_2025
+
+[api]
+secret_key  = fake_key_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456
+webhook_url = https://hooks.acme.corp/events
+
+[aws]
+access_key = AKIAIOSFODNN7EXAMPLE
+secret_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+region     = us-east-1
+        </pre>
+    </div>
+    <p class="form-hint">⚠️ This page is restricted. Access has been logged.</p>
+</div>
+{% endblock %}

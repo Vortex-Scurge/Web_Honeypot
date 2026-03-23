@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-page">
+    <h2>🔍 Document Search</h2>
+    <form method="GET" action="/search">
+        <input type="text" name="q" placeholder="Search documents, reports..." value="{{ query }}">
+        <button type="submit" class="btn">Search</button>
+    </form>
+    {% if results %}
+    <div class="results">
+        <h3>Results for "{{ query }}"</h3>
+        <ul>
+            {% for r in results %}
+            <li>📄 {{ r }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
