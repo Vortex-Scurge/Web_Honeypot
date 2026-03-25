@@ -19,7 +19,7 @@ def get_connection():
 
 
 def init_db():
-    """Create the attacks table if it doesn't exist."""
+    """Create the attacks and unknown_payloads tables if they don't exist."""
     conn = get_connection()
     conn.execute('''
         CREATE TABLE IF NOT EXISTS attacks (
@@ -39,8 +39,51 @@ def init_db():
     conn.execute('CREATE INDEX IF NOT EXISTS idx_timestamp ON attacks(timestamp)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_ip ON attacks(ip_address)')
     conn.execute('CREATE INDEX IF NOT EXISTS idx_attack_type ON attacks(attack_type)')
+    
+    # Table for payloads that didn't match our dataset but look suspicious
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS unknown_payloads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            ip_address TEXT NOT NULL,
+            url TEXT NOT NULL,
+            payload TEXT,
+            classified TEXT DEFAULT 'No'
+        )
+    ''')
+    
+    # Ad-hoc migration for severity
+    try:
+        conn.execute('ALTER TABLE attacks ADD COLUMN severity TEXT DEFAULT "Medium"')
+    except sqlite3.OperationalError:
+        pass
+
     conn.commit()
     conn.close()
+
+def log_unknown_payload(ip, url, payload):
+    """Log an unidentified, potentially malicious payload."""
+    if not payload:
+        return
+        
+    conn = get_connection()
+    conn.execute('''
+        INSERT INTO unknown_payloads (timestamp, ip_address, url, payload)
+        VALUES (?, ?, ?, ?)
+    ''', (datetime.now().isoformat(), ip, url, payload))
+    conn.commit()
+    conn.close()
+
+def get_unknown_payloads(limit=50, offset=0):
+    """Retrieve unknown payloads that have not been classified yet."""
+    conn = get_connection()
+    rows = conn.execute('''
+        SELECT * FROM unknown_payloads 
+        WHERE classified = 'No' 
+        ORDER BY id DESC LIMIT ? OFFSET ?
+    ''', (limit, offset)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 def log_attack(data):
@@ -48,8 +91,8 @@ def log_attack(data):
     conn = get_connection()
     conn.execute('''
         INSERT INTO attacks (timestamp, ip_address, method, url, headers,
-                             payload, attack_type, user_agent, file_uploaded, response_code)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                             payload, attack_type, user_agent, file_uploaded, response_code, severity)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         data.get('timestamp', datetime.now().isoformat()),
         data.get('ip_address', 'unknown'),
@@ -61,6 +104,7 @@ def log_attack(data):
         data.get('user_agent', ''),
         data.get('file_uploaded', ''),
         data.get('response_code', 200),
+        data.get('severity', 'Medium'),
     ))
     conn.commit()
     conn.close()

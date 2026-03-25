@@ -22,13 +22,14 @@ handler.setFormatter(logging.Formatter(
 file_logger.addHandler(handler)
 
 
-def log_request(request_data, attack_type, response_code=200):
+def log_request(request_data, attack_type, severity='Medium', response_code=200):
     """
     Log a request to both the log file and the database.
 
     Args:
         request_data: dict from utils.extract_request_data()
         attack_type: string classification from detector
+        severity: string severity rating
         response_code: HTTP response code returned
     """
     record = {
@@ -39,17 +40,22 @@ def log_request(request_data, attack_type, response_code=200):
         'headers': request_data.get('headers', {}),
         'payload': request_data.get('payload', ''),
         'attack_type': attack_type,
+        'severity': severity,
         'user_agent': request_data.get('user_agent', ''),
         'file_uploaded': request_data.get('file_uploaded', ''),
         'response_code': response_code,
     }
 
     # Write to log file
+    payload_str = str(record['payload']) if record['payload'] is not None else ""
+    ua_str = str(record['user_agent']) if record['user_agent'] is not None else ""
+    
     file_logger.info(
         f"[{attack_type}] {record['method']} {record['url']} | "
         f"IP: {record['ip_address']} | "
-        f"Payload: {record['payload'][:200]} | "
-        f"UA: {record['user_agent'][:100]}"
+        f"Severity: {record['severity']} | "
+        f"Payload: {payload_str[:200]} | "
+        f"UA: {ua_str[:100]}"
     )
 
     # Write to database

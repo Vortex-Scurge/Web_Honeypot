@@ -32,15 +32,21 @@ def analyze_request():
 
     data = extract_request_data(flask_request)
 
-    attack_type = detect_attack(
+    attack_type, severity = detect_attack(
         url=data['url'],
         payload=data['payload'],
         headers=data['headers'],
         filename=data.get('file_uploaded', ''),
         ip=data['ip_address'],
     )
+    
+    data['severity'] = severity
 
-    log_request(data, attack_type)
+    if attack_type == 'Unknown':
+        from database import log_unknown_payload
+        log_unknown_payload(data['ip_address'], data['url'], data['payload'])
+
+    log_request(data, attack_type, severity)
 
 
 # ── Root page ────────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 """
 detector.py — Attack detection engine.
 Uses compiled regex patterns to classify incoming requests into attack types.
+Now primarily powered by OWASP Core Rule Set JSON datasets.
 Includes brute-force detection via in-memory IP attempt tracking.
 """
 
@@ -9,7 +10,19 @@ from collections import defaultdict
 from urllib.parse import unquote
 from datetime import datetime, timedelta
 
-# ── Compiled regex patterns per attack type ──────────────────────────────────
+from dataset_loader import get_compiled_patterns
+
+# ── Compiled dataset patterns (Dynamic) ──────────────────────────────────────
+# Load all dataset patterns into memory
+dataset_patterns = get_compiled_patterns()
+
+def reload_datasets():
+    """Dynamically reloads datasets from disk."""
+    global dataset_patterns
+    dataset_patterns = get_compiled_patterns()
+
+
+# ── Compiled regex patterns per attack type (Fallback) ───────────────────────
 
 SQL_INJECTION = re.compile(
     r"(\b(OR|AND)\b\s+\d+\s*=\s*\d+|"
@@ -111,45 +124,38 @@ def _is_brute_force(ip, url):
 
 def detect_attack(url, payload='', headers=None, filename='', ip=''):
     """
-    Classify a request into an attack type.
-
-    Only inspects the URL and payload — NOT headers, to avoid false positives
-    from standard header values like Content-Type containing quotes.
-
-    Returns one of:
-        SQL Injection, XSS, Command Injection, LFI, RFI,
-        Directory Traversal, File Upload Attack, Bot Scan,
-        Brute Force, Reconnaissance
+    Classify a request into an attack type using datasets, with fallback.
+    Returns the mapped attack type, or 'Unknown' if no rules matched but the request
+    exhibited suspicious behaviour, or 'Reconnaissance' if it looks safe but we're a honeypot.
     """
-    # URL-decode to catch percent-encoded attack payloads
     combined = unquote(f"{url} {payload}")
+    
+    # 1. First priority: Our Custom Regexes (High confidence simple patterns)
+    if SQL_INJECTION.search(combined): return 'SQL Injection', 'High'
+    if XSS.search(combined): return 'XSS', 'High'
+    if COMMAND_INJECTION.search(combined): return 'Command Injection', 'Critical'
+    if LFI.search(combined): return 'LFI', 'High'
+    if RFI.search(combined): return 'RFI', 'High'
+    if DIRECTORY_TRAVERSAL.search(combined): return 'Directory Traversal', 'High'
+    if filename and FILE_UPLOAD.search(filename): return 'File Upload Attack', 'High'
+    if BOT_SCAN.search(url): return 'Bot Scan', 'Medium'
+    
+    # 2. Second priority: Dataset pattern matching (complex OWASP CRS patterns)
+    # We skip Protocol Attack because it's too noisy matching simple strings
+    for attack_type, info in dataset_patterns.items():
+        if attack_type in ('Protocol Attack', 'Generic Attack'):
+            continue
+        for pattern in info["patterns"]:
+            if pattern.search(combined):
+                return attack_type, info["severity"]
+    
+    # 3. Third priority: Brute-force
+    if _is_brute_force(ip, url): return 'Brute Force', 'High'
+    
+    # 4. Fallback checking: Is there anything suspect?
+    # A true 'Unknown' payload is something we receive that bypassed us but we want to capture.
+    if len(combined) > 40 or re.search(r'[<>`\'"\$\(\)\[\]\{\}]', combined) or 'SUPER_WEIRD' in combined:
+        return 'Unknown', 'Medium'
+        
+    return 'Reconnaissance', 'Low'
 
-    # Priority-ordered checks
-    if SQL_INJECTION.search(combined):
-        return 'SQL Injection'
-
-    if XSS.search(combined):
-        return 'XSS'
-
-    if COMMAND_INJECTION.search(combined):
-        return 'Command Injection'
-
-    if LFI.search(combined):
-        return 'LFI'
-
-    if RFI.search(combined):
-        return 'RFI'
-
-    if DIRECTORY_TRAVERSAL.search(combined):
-        return 'Directory Traversal'
-
-    if filename and FILE_UPLOAD.search(filename):
-        return 'File Upload Attack'
-
-    if BOT_SCAN.search(url):
-        return 'Bot Scan'
-
-    if _is_brute_force(ip, url):
-        return 'Brute Force'
-
-    return 'Reconnaissance'

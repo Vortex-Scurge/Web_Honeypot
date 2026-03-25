@@ -1,0 +1,14 @@
+{
+    "attack_type": "Generic Attack",
+    "severity": "Medium",
+    "patterns": [
+        "(?:close|exists|fork|(?:ope|spaw)n|re(?:ad|quire)|w(?:atch|rite))[\\s\\x0b]*\\(",
+        "Process[\\s\\x0b]*\\.[\\s\\x0b]*spawn[\\s\\x0b]*\\(",
+        "^data:(?:(?:\\*|[^!\\",
+        "(?:\\{%[^%}]*%}|<%=?[^%>]*%>)",
+        "__proto__|constructor[\\s\\x0b]*(?:\\.|\\]?\\[)[\\s\\x0b]*prototype",
+        "@+\\{[\\s\\x0b]*\\[",
+        "while[\\s\\x0b]*\\([\\s\\x0b\\(]*(?:!+(?:false|null|undefined|NaN|[\\+\\-]?0|\\",
+        "_(?:\\$\\$ND_FUNC\\$\\$_|_js_function)|(?:\\beval|new[\\s\\x0b]+Function[\\s\\x0b]*)\\(|(?:String\\.fromCharCod|Module:prototyp)e|function\\(\\)\\{|this\\.constructor|module\\.exports=|\\([\\s\\x0b]*[^0-9A-Z_a-z]child_process[^0-9A-Z_a-z][\\s\\x0b]*\\)|cons(?:tructor:constructor|ole(?:\\.(?:(?:debu|lo)g|error|info|trace|warn)(?:\\.call)?\\(|\\[[\\"
+    ]
+}

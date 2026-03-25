@@ -1,0 +1,5 @@
+{
+    "attack_type": "Bot Scan",
+    "severity": "Medium",
+    "patterns": []
+}

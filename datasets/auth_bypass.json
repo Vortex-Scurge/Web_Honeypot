@@ -1,0 +1,32 @@
+{
+    "attack_type": "Auth Bypass",
+    "severity": "High",
+    "patterns": [
+        "sometimes\\ you\\ need\\ to\\ change\\ the\\ scope\\ to\\ an\\ invalid\\ one\\ to\\ bypass\\ a\\ filter\\ on\\ redirect_uri:",
+        ">\\ the\\ client\\ must\\ not\\ use\\ the\\ authorization\\ code\\ \\ more\\ than\\ once\\.",
+        "\\-\\ \\[how\\ i\\ hacked\\ github\\ again\\ \\-\\ egor\\ homakov\\ \\-\\ february\\ 7,\\ 2014\\]\\(https://web\\.archive\\.org/web/20140302195803/http://homakov\\.blogspot\\.ch:80/2014/02/how\\-i\\-hacked\\-github\\-again\\.html\\)",
+        "\\-\\ \\[portswigger\\ \\-\\ authentication\\ bypass\\ via\\ oauth\\ implicit\\ flow\\]\\(https://portswigger\\.net/web\\-security/oauth/lab\\-oauth\\-authentication\\-bypass\\-via\\-oauth\\-implicit\\-flow\\)",
+        "\\-\\ \\[references\\]\\(\\#references\\)",
+        "redirect\\ to\\ an\\ accepted\\ open\\ url\\ in\\ to\\ get\\ the\\ access\\ token",
+        "\\-\\ \\[authorization\\ code\\ rule\\ violation\\]\\(\\#authorization\\-code\\-rule\\-violation\\)",
+        "and\\ should\\ revoke\\ \\(when\\ possible\\)\\ all\\ tokens\\ previously\\ issued\\ based\\ on\\ that\\ authorization\\ code\\.",
+        "\\-\\ \\[bypassing\\ google\\ authentication\\ on\\ periscope's\\ administration\\ panel\\ \\-\\ jack\\ whitton\\ \\-\\ july\\ 20,\\ 2015\\]\\(https://web\\.archive\\.org/web/20250113205505/https://whitton\\.io/articles/bypassing\\-google\\-authentication\\-on\\-periscopes\\-admin\\-panel/\\)",
+        "\\-\\ \\[labs\\]\\(\\#labs\\)",
+        "oauth\\ implementations\\ should\\ never\\ whitelist\\ entire\\ domains,\\ only\\ a\\ few\\ urls\\ so\\ that\\ \u201credirect_uri\u201d\\ can\u2019t\\ be\\ pointed\\ to\\ an\\ open\\ redirect\\.",
+        "\\-\\ \\[portswigger\\ \\-\\ stealing\\ oauth\\ access\\ tokens\\ via\\ an\\ open\\ redirect\\]\\(https://portswigger\\.net/web\\-security/oauth/lab\\-oauth\\-stealing\\-oauth\\-access\\-tokens\\-via\\-an\\-open\\-redirect\\)",
+        "\\-\\ \\[executing\\ xss\\ via\\ redirect_uri\\]\\(\\#executing\\-xss\\-via\\-redirect_uri\\)",
+        "\\-\\ \\[oauth\\ 2\\ \\-\\ how\\ i\\ have\\ hacked\\ facebook\\ again\\ \\(\\.\\.and\\ would\\ have\\ stolen\\ a\\ valid\\ access\\ token\\)\\ \\-\\ asanso\\ \\-\\ april\\ 8,\\ 2014\\]\\(https://web\\.archive\\.org/web/20140411210456/http://intothesymmetry\\.blogspot\\.ch:80/2014/04/oauth\\-2\\-how\\-i\\-have\\-hacked\\-facebook\\.html\\)",
+        "\\-\\ \\[portswigger\\ \\-\\ forced\\ oauth\\ profile\\ linking\\]\\(https://portswigger\\.net/web\\-security/oauth/lab\\-oauth\\-forced\\-oauth\\-profile\\-linking\\)",
+        "some\\ android/ios\\ app\\ can\\ be\\ decompiled\\ and\\ the\\ oauth\\ private\\ key\\ can\\ be\\ accessed\\.",
+        "\\-\\ \\[grabbing\\ oauth\\ token\\ via\\ redirect_uri\\]\\(\\#grabbing\\-oauth\\-token\\-via\\-redirect_uri\\)",
+        "redirect\\ to\\ a\\ controlled\\ domain\\ to\\ get\\ the\\ access\\ token",
+        "if\\ an\\ authorization\\ code\\ is\\ used\\ more\\ than\\ once,\\ the\\ authorization\\ server\\ must\\ deny\\ the\\ request",
+        "\\-\\ \\[cross\\-site\\ request\\ forgery\\]\\(\\#cross\\-site\\-request\\-forgery\\)",
+        "\\-\\ \\[portswigger\\ \\-\\ oauth\\ account\\ hijacking\\ via\\ redirect_uri\\]\\(https://portswigger\\.net/web\\-security/oauth/lab\\-oauth\\-account\\-hijacking\\-via\\-redirect\\-uri\\)",
+        "\\-\\ \\[all\\ your\\ paypal\\ oauth\\ tokens\\ belong\\ to\\ me\\ \\-\\ asanso\\ \\-\\ november\\ 28,\\ 2016\\]\\(https://web\\.archive\\.org/web/20161130191804/http://blog\\.intothesymmetry\\.com:80/2016/11/all\\-your\\-paypal\\-tokens\\-belong\\-to\\-me\\.html\\)",
+        "\\-\\ \\[stealing\\ oauth\\ token\\ via\\ referer\\]\\(\\#stealing\\-oauth\\-token\\-via\\-referer\\)",
+        "\\-\\ \\[how\\ microsoft\\ is\\ giving\\ your\\ data\\ to\\ facebook\u2026\\ and\\ everyone\\ else\\ \\-\\ andris\\ atteka\\ \\-\\ september\\ 16,\\ 2014\\]\\(https://web\\.archive\\.org/web/20151221013410/http://andrisatteka\\.blogspot\\.ch:80/2014/09/how\\-microsoft\\-is\\-giving\\-your\\-data\\-to\\.html\\)",
+        "\\-\\ \\[portswigger\\ \\-\\ stealing\\ oauth\\ access\\ tokens\\ via\\ a\\ proxy\\ page\\]\\(https://portswigger\\.net/web\\-security/oauth/lab\\-oauth\\-stealing\\-oauth\\-access\\-tokens\\-via\\-a\\-proxy\\-page\\)",
+        "\\-\\ \\[oauth\\ private\\ key\\ disclosure\\]\\(\\#oauth\\-private\\-key\\-disclosure\\)"
+    ]
+}

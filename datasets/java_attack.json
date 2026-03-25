@@ -1,0 +1,18 @@
+{
+    "attack_type": "Java Attack",
+    "severity": "High",
+    "patterns": [
+        "java\\b.+(?:runtime|processbuilder)",
+        "(?i)(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)(?:[^\\}]{0,15}(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)|jndi|ctx)",
+        "(?:rO0ABQ|KztAAU|Cs7QAF)",
+        "(?:runtime|processbuilder)",
+        "(?:clonetransform|xmldecod)er|f(?:orclosure|ilewriter)|in(?:stantiate(?:factory|transformer)|vokertransformer)|(?:prototype(?:clone|serialization)factor|getpropert)y|whileclosure",
+        "java\\.lang\\.(?:runtime|processbuilder)",
+        "\\xac\\xed\\x00\\x05",
+        "class\\.module\\.classLoader\\.resources\\.context\\.parent\\.pipeline|springframework\\.context\\.support\\.FileSystemXmlApplicationContext",
+        "(?i)(?:unmarshaller|base64data|java\\.)",
+        "(?i)(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)",
+        ".*\\.(?:jsp|jspx)\\.*$",
+        "(?i)(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)(?:[^\\}]*(?:\\$|&dollar;?)(?:\\{|&l(?:brace|cub);?)|jndi|ctx)"
+    ]
+}

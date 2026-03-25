@@ -83,8 +83,25 @@
                     <option value="RFI">RFI</option>
                     <option value="Directory Traversal">Directory Traversal</option>
                     <option value="File Upload Attack">File Upload Attack</option>
+                    <option value="SSRF">SSRF</option>
+                    <option value="SSTI">SSTI</option>
+                    <option value="XXE">XXE</option>
+                    <option value="Deserialization">Deserialization</option>
+                    <option value="JWT Attack">JWT Attack</option>
+                    <option value="Auth Bypass">Auth Bypass</option>
+                    <option value="Open Redirect">Open Redirect</option>
+                    <option value="API Enum">API Enum</option>
                     <option value="Bot Scan">Bot Scan</option>
-                    <option value="Brute Force">Brute Force</option>
+                    <option value="Sensitive File">Sensitive File</option>
+                    <option value="Admin Access">Admin Access</option>
+                    <option value="Header Injection">Header Injection</option>
+                    <option value="Cookie Injection">Cookie Injection</option>
+                    <option value="Path Encoding">Path Encoding</option>
+                    <option value="Protocol Attack">Protocol Attack</option>
+                    <option value="Generic Attack">Generic Attack</option>
+                    <option value="Session Attack">Session Attack</option>
+                    <option value="Java Attack">Java Attack</option>
+                    <option value="PHP Injection">PHP Injection</option>
                     <option value="Reconnaissance">Reconnaissance</option>
                 </select>
                 <button class="btn" onclick="loadLogs()">Search</button>
@@ -101,6 +118,7 @@
                             <th>ID</th>
                             <th>Timestamp</th>
                             <th>IP Address</th>
+                            <th>Severity</th>
                             <th>Method</th>
                             <th>URL</th>
                             <th>Attack Type</th>
@@ -109,7 +127,29 @@
                         </tr>
                     </thead>
                     <tbody id="logBody">
-                        <tr><td colspan="8" class="empty">Loading…</td></tr>
+                        <tr><td colspan="9" class="empty">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ── Unknown Payloads ───────────────────────────────────── -->
+        <section class="log-section" style="margin-top: 2rem;">
+            <h3>❓ Unknown Payloads (Needs Classification)</h3>
+            <div class="table-wrap">
+                <table id="unknownTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp</th>
+                            <th>IP Address</th>
+                            <th>URL</th>
+                            <th>Payload</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unknownBody">
+                        <tr><td colspan="6" class="empty">Loading…</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -139,6 +179,19 @@
         fetch('/dashboard/api/stats')
             .then(r => r.json())
             .then(data => {
+                // Populate the search filter with dynamically found attack types
+                const filterSelect = document.getElementById('filterType');
+                const firstOption = filterSelect.options[0];
+                filterSelect.innerHTML = '';
+                filterSelect.appendChild(firstOption);
+                
+                Object.keys(data.attack_types).sort().forEach(type => {
+                    const opt = document.createElement('option');
+                    opt.value = type;
+                    opt.textContent = type;
+                    filterSelect.appendChild(opt);
+                });
+
                 // Daily attacks line chart
                 new Chart(document.getElementById('dailyChart'), {
                     type: 'line',
@@ -242,21 +295,30 @@
                 .then(data => {
                     const body = document.getElementById('logBody');
                     if (!data.logs.length) {
-                        body.innerHTML = '<tr><td colspan="8" class="empty">No logs found.</td></tr>';
+                        body.innerHTML = '<tr><td colspan="9" class="empty">No logs found.</td></tr>';
                         return;
                     }
-                    body.innerHTML = data.logs.map(log => `
+                    body.innerHTML = data.logs.map(log => {
+                        let sevColor = '#aaa';
+                        if(log.severity === 'Critical') sevColor = '#f44336';
+                        else if(log.severity === 'High') sevColor = '#ff9800';
+                        else if(log.severity === 'Medium') sevColor = '#2196f3';
+                        else if(log.severity === 'Low') sevColor = '#4caf50';
+                        
+                        return `
                         <tr>
                             <td>${log.id}</td>
                             <td>${log.timestamp ? log.timestamp.replace('T',' ').slice(0,19) : ''}</td>
                             <td>${esc(log.ip_address)}</td>
+                            <td style="color:${sevColor}; font-weight:bold">${esc(log.severity || 'Medium')}</td>
                             <td><span class="method-badge">${esc(log.method)}</span></td>
                             <td class="url-cell" title="${esc(log.url)}">${esc(log.url)}</td>
                             <td><span class="type-badge type-${slugify(log.attack_type)}">${esc(log.attack_type)}</span></td>
                             <td class="ua-cell" title="${esc(log.user_agent)}">${esc(log.user_agent).slice(0,40)}</td>
                             <td><button class="btn btn-sm" onclick='showPayload(${JSON.stringify(JSON.stringify(log.payload||""))})'>View</button></td>
                         </tr>
-                    `).join('');
+                        `
+                    }).join('');
                 });
         }
 
@@ -275,8 +337,108 @@
             document.getElementById('payloadModal').classList.remove('active');
         }
 
+        // Load unknown payloads
+        function loadUnknownPayloads() {
+            fetch('/dashboard/api/unknown')
+                .then(r => r.json())
+                .then(data => {
+                    const body = document.getElementById('unknownBody');
+                    if (!data.payloads || !data.payloads.length) {
+                        body.innerHTML = '<tr><td colspan="6" class="empty">No unknown payloads.</td></tr>';
+                        return;
+                    }
+                    body.innerHTML = data.payloads.map(log => `
+                        <tr>
+                            <td>${log.id}</td>
+                            <td>${log.timestamp ? log.timestamp.replace('T',' ').slice(0,19) : ''}</td>
+                            <td>${esc(log.ip_address)}</td>
+                            <td class="url-cell" title="${esc(log.url)}">${esc(log.url)}</td>
+                            <td><button class="btn btn-sm" onclick='showPayload(${JSON.stringify(JSON.stringify(log.payload||""))})'>View Payload</button></td>
+                            <td>
+                                <select id="class_sel_${log.id}" style="width:120px; font-size:12px;" onchange="toggleCustomInput(${log.id})">
+                                    <option value="SQL Injection">SQLi</option>
+                                    <option value="XSS">XSS</option>
+                                    <option value="Command Injection">CMD</option>
+                                    <option value="LFI">LFI</option>
+                                    <option value="RFI">RFI</option>
+                                    <option value="Directory Traversal">DirTrav</option>
+                                    <option value="File Upload Attack">File Upload</option>
+                                    <option value="SSRF">SSRF</option>
+                                    <option value="SSTI">SSTI</option>
+                                    <option value="XXE">XXE</option>
+                                    <option value="Deserialization">Deserialization</option>
+                                    <option value="JWT Attack">JWT Attack</option>
+                                    <option value="Auth Bypass">Auth Bypass</option>
+                                    <option value="Open Redirect">Open Redirect</option>
+                                    <option value="API Enum">API Enum</option>
+                                    <option value="Bot Scan">Bot Scan</option>
+                                    <option value="Sensitive File">Sensitive File</option>
+                                    <option value="Admin Access">Admin Access</option>
+                                    <option value="Header Injection">Header Injection</option>
+                                    <option value="Cookie Injection">Cookie Injection</option>
+                                    <option value="Path Encoding">Path Encoding</option>
+                                    <option value="Protocol Attack">Protocol Attack</option>
+                                    <option value="Generic Attack">Generic Attack</option>
+                                    <option value="Session Attack">Session Attack</option>
+                                    <option value="Java Attack">Java Attack</option>
+                                    <option value="PHP Injection">PHP Injection</option>
+                                    <option value="custom">+ Custom Attack...</option>
+                                </select>
+                                <input type="text" id="custom_type_${log.id}" style="display:none; width:120px; font-size:12px; margin-top:4px;" placeholder="New Attack Name">
+                                <button class="btn btn-sm" style="background:#4caf50; display:block; margin-top:4px; width:120px;" onclick='classifyPayload(${log.id}, ${JSON.stringify(log.payload||"")})'>Classify</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                });
+        }
+
+        function toggleCustomInput(id) {
+            const sel = document.getElementById('class_sel_' + id);
+            const inp = document.getElementById('custom_type_' + id);
+            if (sel.value === 'custom') {
+                inp.style.display = 'block';
+                inp.focus();
+            } else {
+                inp.style.display = 'none';
+            }
+        }
+
+        function classifyPayload(id, payload) {
+            let attackType = document.getElementById('class_sel_' + id).value;
+            if (attackType === 'custom') {
+                attackType = document.getElementById('custom_type_' + id).value.trim();
+                if (!attackType) {
+                    alert('Please enter a custom attack name.');
+                    return;
+                }
+            }
+            if(!confirm('Classify this payload as ' + attackType + '?')) return;
+            
+            fetch('/dashboard/api/classify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: id,
+                    attack_type: attackType,
+                    pattern: escapeRegExp(payload)
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                alert(res.message);
+                loadUnknownPayloads(); // Refresh list
+            })
+            .catch(err => alert("Error classifying payload"));
+        }
+
+        // Extremely basic regex escape for exact match rules 
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+        }
+
         // Load logs on page load
         loadLogs();
+        loadUnknownPayloads();
     </script>
 </body>
 </html>
