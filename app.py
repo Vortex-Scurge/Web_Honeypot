@@ -4,6 +4,8 @@ Registers blueprints, runs detection middleware on every request,
 and handles 404 catch-all for bot-scan detection.
 """
 
+import json
+from datetime import datetime
 from flask import Flask, request as flask_request, render_template
 from database import init_db
 from detector import detect_attack
@@ -40,6 +42,36 @@ def analyze_request():
         ip=data['ip_address'],
     )
     
+    # ── Feature 1 & 2: Honey Event Detection ──
+    is_honey_event = False
+    
+    # Check for Credential Usage (Feature 2)
+    auth_header = flask_request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer '):
+        token = auth_header.split(' ', 1)[1]
+        if token in ("sk_test_honey_123", "oauth_honey_token_xyz"):
+            attack_type = 'Credential Misuse'
+            severity = 'High'
+            is_honey_event = True
+            
+    # Check for Env Access (Feature 1)
+    if flask_request.path == '/download-env':
+        attack_type = 'Env Accessed'
+        severity = 'Medium'
+        is_honey_event = True
+
+    # ── Feature 3: Attack Context Logging ──
+    if is_honey_event:
+        context = {
+            "event": attack_type,
+            "level": severity.upper(),
+            "timestamp": datetime.now().isoformat(),
+            "ip": flask_request.remote_addr,
+            "user_agent": flask_request.headers.get("User-Agent", ""),
+            "endpoint": flask_request.path
+        }
+        data['payload'] = json.dumps(context)
+        
     data['severity'] = severity
 
     if attack_type == 'Unknown':

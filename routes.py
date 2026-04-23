@@ -4,10 +4,22 @@ Each route renders a believable page and accepts input for attack logging.
 All detection/logging happens in the before_request middleware in app.py.
 """
 
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, Response
 from file_capture import capture_upload
 
 honeypot = Blueprint('honeypot', __name__)
+
+# ── Honey Credential Injection ───────────────────────────────────────────────
+
+HONEY_API_KEY = "sk_test_honey_123"
+HONEY_OAUTH_TOKEN = "oauth_honey_token_xyz"
+
+@honeypot.route('/download-env', methods=['GET'])
+def download_env():
+    # Return decoy env file
+    env_content = f"API_KEY={HONEY_API_KEY}\nOAUTH_TOKEN={HONEY_OAUTH_TOKEN}\n"
+    return Response(env_content, mimetype='text/plain'), 200
+
 
 
 # ── Login (SQL Injection trap) ───────────────────────────────────────────────
